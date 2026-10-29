@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.pem
+id_ed25519*
+/papers/
+/DataSet/
+/artifacts/
+/runs/
+/checkpoints/
+/local-projects/
+/.test-tmp/
