@@ -18,11 +18,36 @@
 
 ## 安装
 
-把本仓库的完整内容放进所用工具的skill目录，确保 `SKILL.md` 直接位于 `yanflow/` 内。不要只复制主文件，参考说明和模板也是skill的一部分。
+选你正在用的工具，复制对应的一条命令执行即可。下面安装到个人 skill 目录，供多个项目使用；需要已安装 Git。安装 skill 和建立科研项目是两件事，实际项目的位置由之后的对话决定。
 
-### 从GitHub克隆
+**Codex**
 
-在科研项目根目录中执行对应命令之一：
+```sh
+git clone https://github.com/unno11/yanflow.git "$HOME/.agents/skills/yanflow"
+```
+
+**Claude Code**
+
+```sh
+git clone https://github.com/unno11/yanflow.git "$HOME/.claude/skills/yanflow"
+```
+
+<details>
+<summary>Cursor、Gemini CLI 和仅当前项目安装</summary>
+
+**Cursor**
+
+```sh
+git clone https://github.com/unno11/yanflow.git "$HOME/.cursor/skills/yanflow"
+```
+
+**Gemini CLI**（使用其官方安装入口，按提示完成）
+
+```sh
+gemini skills install https://github.com/unno11/yanflow.git
+```
+
+只想在当前项目使用时，在项目根目录执行对应命令之一：
 
 ```sh
 # Codex、Cursor、Gemini CLI可用的项目级位置
@@ -32,7 +57,11 @@ git clone https://github.com/unno11/yanflow.git .agents/skills/yanflow
 git clone https://github.com/unno11/yanflow.git .claude/skills/yanflow
 ```
 
-也可以下载仓库ZIP，解压并将文件夹命名为 `yanflow`，再放进对应目录。个人全局安装及各工具入口差异见 [跨工具接入](references/portability.md)。同一个工具可能扫描多个兼容目录，避免重复装多个同名副本。
+</details>
+
+`$HOME` 写法适用于 PowerShell 和常见 Unix shell；Windows 的命令提示符 cmd 请使用 PowerShell 执行这些命令。装完后让工具重新发现 skill，必要时打开新会话，再说“使用研流，帮我整理当前项目”或“开个新项目做……”。agent 会询问缺失的信息、定位目录并建立所需结构。
+
+也可以直接把 [本仓库链接](https://github.com/unno11/yanflow) 交给具备安装能力的 agent，说“把研流安装到当前工具的个人 skill 目录”。它应检查现有安装后完成，不要求使用者手动复制文件。不使用 Git 时可下载仓库 ZIP，解压并保留完整 `yanflow/` 文件夹。各工具路径与官方依据见 [跨工具接入](references/portability.md)；同一工具避免重复安装同名副本，已有目录不覆盖。
 
 ### 不支持原生skill的工具
 
@@ -93,9 +122,24 @@ git clone https://github.com/unno11/yanflow.git .claude/skills/yanflow
 
 用户要求整理项目后，skill 会以该结构为默认参考，梳理实际材料并补齐主线、交接、文献、实验和数据的对应关系，无需用户再贴目录树。进行中的项目优先复用已有记录和位置，补缺失入口，不强制改名、迁移或覆盖运行依赖。大数据、模型与原始轨迹可以留在服务器，通过索引对应；涉及移动或覆盖已有材料，先讨论具体方案。仅问一篇论文等小任务不会自动整理整个项目。
 
-## 初始化脚本
+## 让 agent 建立项目
 
-需要Python 3.10+，没有额外包依赖。先由使用者确定实际存放位置；以下是命令格式示例：
+直接对话即可，例如：
+
+> 使用者：开个新项目，研究世界模型规划。
+>
+> agent：项目想放在哪里？统一文献库已有位置吗？
+>
+> 使用者：项目放 D 盘 Project 下，文献库用现有的。
+>
+> agent：我先检查 `D:\Project` 和已记录的文献库位置，再补齐项目名称等缺失信息，建立项目骨架并写入实际路径。
+
+agent 根据当前系统解析位置，在指定父目录内查找。路径唯一且意思明确时直接采用；有多个候选、目录不存在或“Project 下”尚未指定具体项目时，只问必要的选择。不扫描整块磁盘，不把示例路径当默认值；已有项目先识别和复用已有记录。使用者无需知道脚本参数，具体定位规则见 [项目建立与路径解析](references/project-records.md#自然语言定位与建立)。
+
+<details>
+<summary>手动初始化／供 agent 调用的脚本</summary>
+
+需要 Python 3.10+，没有额外包依赖。agent 将对话中确定的位置转换成参数并执行；以下也可供希望手动操作的人使用：
 
 ```sh
 # 在本仓库目录中，只建立统一文献库
@@ -109,6 +153,23 @@ python scripts/init_project.py --library-dir "文献库的实际位置" --projec
 ```
 
 某些系统命令名为 `python3`。脚本只创建缺失文件，保留已存在内容。它负责目录初始化，不会自行检索论文、训练模型、安装工具或启动服务器实验；这些由具备相应能力的AI按skill规则执行。
+
+</details>
+
+## 内置科研警示
+
+这些规则在相关现象出现时触发，不要求每次任务填写整张检查表：
+
+- **效果突然变好**：先核查数据泄漏、样本身份、部署信息和评测口径，再解释方法收益。
+- **代码看起来正确**：仍要追踪实际输入、中间产物和输出，核对预处理、单位、掩码及权重加载。
+- **准备继续或重启实验**：先查实际进程、已有结果、恢复点与自动接续队列，避免重复运行。
+- **本地代码已经修好**：核实服务器实际执行版本，历史结果仍绑定当时的代码和配置。
+- **结果不理想**：保留失败版本；不临时换指标、筛样本、加预算或只报告有利种子。
+- **反复报同一个错**：停止没有新证据的同类重试，提出可验证的诊断；方案变化先讨论。
+- **准备宣称创新或机制成立**：核查最近邻文献、强基线、同预算对照和反证，候选 idea 不写成已验证结论。
+- **上下文变长或阶段有进展**：及时更新交接；记录已做、不可直接重跑的操作、核验时间和下一步。
+
+完整触发条件与处理方式见 [科研警示与纠偏](references/research-guardrails.md)。新出现的问题按“现象—证据—根因—处理—适用范围”积累；项目特有问题留在项目记录，确认有通用价值后再更新 skill。
 
 ## 协作与学习
 
