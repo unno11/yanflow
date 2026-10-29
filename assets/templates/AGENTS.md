@@ -1,5 +1,7 @@
 # {{PROJECT_NAME}}
 
+最后写入者：初始化脚本；更新时间：{{UPDATED}}；内容及运行状态最后核验：未核实。
+
 ## 研究目标与当前主线
 
 - 目标：{{GOAL}}
@@ -10,7 +12,7 @@
 
 ## 位置与阅读入口
 
-- 项目：`{{PROJECT_DIR}}`
+- 项目：`{{PROJECT_DIR}}`；主机：`{{HOST_ID}}`
 - 统一文献库：`{{LIBRARY_DIR}}`
 - 新对话先读本文件，再读 [handoff.md](handoff.md)。
 - 文献：[related_work/index.md](related_work/index.md)
@@ -19,6 +21,8 @@
 - 评测：[experiment/evaluation.md](experiment/evaluation.md)
 - 数据：[dataset.md](dataset.md)
 - 理解与独立操作：[learning.md](learning.md)
+
+以上是新项目默认映射；已有项目的每一项（含学习与复现）均可映射到已有文件、目录或文档段落，主纲列明“职责—实际位置—维护者—可访问工具”。已有等价记录不再创建同名副本。主纲在项目外时，本文件改作短入口并保留必要硬约束摘要，完整版见外部主纲。
 
 ## 协作约定
 

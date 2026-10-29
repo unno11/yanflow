@@ -94,7 +94,7 @@ git clone https://github.com/unno11/yanflow.git .claude/skills/yanflow
 
 ## 项目结构
 
-主体结构参考 [skJack/research-workflow](https://github.com/skJack/research-workflow)。本仓库重写了具体协作约定和Python初始化脚本，并加入统一文献库、活跃项目整理及理解记录。
+主体结构参考 [skJack/research-workflow](https://github.com/skJack/research-workflow)。以下是新项目默认结构；已有项目的每一项都可映射到已有位置或段落，不要求完整重建。统一文献库是有文献归档任务时的可选部分。
 
 ```text
 统一文献库/
@@ -120,7 +120,7 @@ git clone https://github.com/unno11/yanflow.git .claude/skills/yanflow
 └── learning.md                     # 理解证据与独立操作
 ```
 
-用户要求整理项目后，skill 会以该结构为默认参考，梳理实际材料并补齐主线、交接、文献、实验和数据的对应关系，无需用户再贴目录树。进行中的项目优先复用已有记录和位置，补缺失入口，不强制改名、迁移或覆盖运行依赖。大数据、模型与原始轨迹可以留在服务器，通过索引对应；涉及移动或覆盖已有材料，先讨论具体方案。仅问一篇论文等小任务不会自动整理整个项目。
+用户要求整理项目后，skill 会以职责为参考，在主纲维护实际位置映射。已有 `experiments/`、复现记录或学习段落时优先复用，出现近似目录请使用者选择，不再建一套。主纲可在 Obsidian 等项目外位置，仓库的 `AGENTS.md` 只作入口并可保留必要硬约束摘要；不复制动态主线。大数据与原始轨迹可以留在服务器，但索引需说明主机、路径及可访问工具。涉及移动或覆盖已有材料，先讨论具体方案。
 
 ## 让 agent 建立项目
 
@@ -128,11 +128,11 @@ git clone https://github.com/unno11/yanflow.git .claude/skills/yanflow
 
 > 使用者：开个新项目，研究世界模型规划。
 >
-> agent：项目想放在哪里？统一文献库已有位置吗？
+> agent：项目想放在哪里？
 >
-> 使用者：项目放 D 盘 Project 下，文献库用现有的。
+> 使用者：项目放 D 盘 Project 下。
 >
-> agent：我先检查 `D:\Project` 和已记录的文献库位置，再补齐项目名称等缺失信息，建立项目骨架并写入实际路径。
+> agent：我先检查 `D:\Project`，再补齐项目名称等缺失信息，建立项目骨架。文献库暂不建立，有文献归档任务时再确定。
 
 agent 根据当前系统解析位置，在指定父目录内查找。路径唯一且意思明确时直接采用；有多个候选、目录不存在或“Project 下”尚未指定具体项目时，只问必要的选择。不扫描整块磁盘，不把示例路径当默认值；已有项目先识别和复用已有记录。使用者无需知道脚本参数，具体定位规则见 [项目建立与路径解析](references/project-records.md#自然语言定位与建立)。
 
@@ -145,14 +145,22 @@ agent 根据当前系统解析位置，在指定父目录内查找。路径唯�
 # 在本仓库目录中，只建立统一文献库
 python scripts/init_project.py --library-dir "文献库的实际位置"
 
+# 只建项目，不要求文献库
+python scripts/init_project.py --project-dir "项目的实际位置" --name "项目名" --goal "一句话研究目标"
+
 # 同时补齐一个独立科研项目
 python scripts/init_project.py --library-dir "文献库的实际位置" --project-dir "项目的实际位置" --name "项目名" --goal "一句话研究目标"
 
-# 按需补充工具入口；可重复传入
-python scripts/init_project.py --library-dir "文献库的实际位置" --project-dir "项目的实际位置" --entrypoint claude --entrypoint gemini
+# 只补AGENTS及所需工具入口，不建其他目录；参数可重复
+python scripts/init_project.py --project-dir "已有项目位置" --entrypoints-only --entrypoint claude --entrypoint gemini
+
+# 主纲和交接在项目外；文件须已存在且当前可访问
+python scripts/init_project.py --project-dir "已有项目位置" --entrypoints-only --entrypoint claude --main-record "笔记库中的主纲.md" --handoff-record "笔记库中的交接.md" --maintainer "负责会话" --constraint "已有的不推送约束"
 ```
 
-某些系统命令名为 `python3`。脚本只创建缺失文件，保留已存在内容。它负责目录初始化，不会自行检索论文、训练模型、安装工具或启动服务器实验；这些由具备相应能力的AI按skill规则执行。
+某些系统命令名为 `python3`。脚本只创建缺失文件，保留已有内容；`kept-existing` 不表示已有入口已更新，agent 需要读取后局部接入。Git 可用时报告忽略状态，被忽略的入口标为 `ignored-local-only`，不自动改忽略规则、提交或推送。第三方仓库／fork 中记录放哪里、是否入库按用户约定处理。近似目录仅做常见别名检查，复杂映射由 agent 维护。
+
+脚本负责建立文件，不自行检索论文、训练模型、安装工具或启动服务器实验。已有定时检查与自动接续需要写入交接；共享记录改写前核查负责会话、保留必要历史，并记录写入者和核验时间。具体见 [项目记录](references/project-records.md) 与 [跨工具接入](references/portability.md)。
 
 </details>
 
@@ -196,12 +204,14 @@ skill 加载后，由当前 agent 根据任务中的现象自动识别并开展�
 
 ```sh
 python scripts/check_skill.py
-python -m unittest discover -s tests -v
+python -B -m unittest discover -s tests -v
 ```
 
 ## 当前验证范围
 
-已在本地验证初始化、中文路径、重复调用保留已有文件、共享库复用及可选工具入口。跨工具加载方式已按官方文档核对，尚未在每种产品和操作系统上逐一实机验证；真实论文获取、长期理解效果及多agent协作也不能仅凭脚本测试视为已验证。
+已通过11项本地测试，覆盖中文路径、重复调用保留原文件、只建项目、只建库、只补入口、外部主纲与约束摘要、近似目录冲突、忽略状态和实际命令行。测试数据使用系统临时目录，`-B` 避免生成安装目录中的Python缓存；受限环境可为测试进程设置安装目录以外的可写 `TEMP`／`TMPDIR`。
+
+跨工具与云端安装、Obsidian内链规则已按官方文档核对，未逐个产品实测。`.skill` 扩展名本身不代表账号持久化，须按对应产品要求上传并启用；目录存在也不代表 skill 已加载。真实论文获取、并发协作、长期理解及警示效果仍需实际使用验证。
 
 ## 参考与许可
 
